@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fusos — Adroq</title>
+<meta name="description" content="Compare o horário do cliente com São Paulo e agende reuniões no calendário da Adroq.">
+<meta name="theme-color" content="#111111">
+<meta property="og:title" content="Fusos — Adroq">
+<meta property="og:description" content="Compare o horário do cliente com São Paulo e agende reuniões.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23111111'/%3E%3Ccircle cx='32' cy='32' r='19' fill='none' stroke='%23fff' stroke-width='5'/%3E%3Cpath d='M32 20v12l8 6' fill='none' stroke='%23fff' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#FFFFFF;--card:#FFFFFF;--ink:#111111;--muted:#767676;--muted2:#A8A8A8;--line:#E7E7E7;--fill:#F5F5F5;
+  --inv-bg:#111111;--inv-ink:#FFFFFF;--inv-muted:#A8A8A8;--warn-bg:#FFF4E5;--warn-ink:#7A4B00;--focus:#2F6FEB;
+  color-scheme:light;box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111111;--card:#1A1A1A;--ink:#FFFFFF;--muted:#A8A8A8;--muted2:#767676;--line:#2C2C2C;--fill:#1F1F1F;
+  --inv-bg:#FFFFFF;--inv-ink:#111111;--inv-muted:#767676;--warn-bg:#2E2414;--warn-ink:#F5C77A;--focus:#6EA0FF;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111111;--card:#1A1A1A;--ink:#FFFFFF;--muted:#A8A8A8;--muted2:#767676;--line:#2C2C2C;--fill:#1F1F1F;
+  --inv-bg:#FFFFFF;--inv-ink:#111111;--inv-muted:#767676;--warn-bg:#2E2414;--warn-ink:#F5C77A;--focus:#6EA0FF;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 Arial,"Helvetica Neue",Helvetica,sans-serif;font-variant-numeric:tabular-nums}
+.wrap{max-width:760px;margin:0 auto;padding:40px 20px 32px}
+.eyebrow{font-family:"Courier New",Courier,monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+h1{font-size:34px;line-height:1.1;margin:8px 0 28px;font-weight:700;letter-spacing:-.02em}
+label.lbl{display:block;margin-bottom:8px}
+select,input,button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.sel{width:100%;min-height:52px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);font-size:17px}
+.pick{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;padding:3px;background:var(--fill)}
+.seg button{border:0;background:transparent;border-radius:7px;padding:7px 14px;cursor:pointer;font-size:14px;color:var(--muted);font-weight:700}
+.seg button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:0 0 0 1px var(--line)}
+.warn{background:var(--warn-bg);color:var(--warn-ink);border-radius:10px;padding:12px 14px;margin-top:12px;font-size:14px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.warn button{border:1px solid currentColor;background:transparent;border-radius:8px;padding:6px 12px;cursor:pointer;font-weight:700;font-size:14px}
+.clocks{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px}
+.clock{border:1px solid var(--line);background:var(--card);border-radius:14px;padding:22px}
+.clock.inv{background:var(--inv-bg);color:var(--inv-ink);border-color:var(--inv-bg)}
+.clock.inv .eyebrow,.clock.inv .sub{color:var(--inv-muted)}
+.head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.zone{font-weight:700;font-size:15px}
+.big{display:flex;align-items:baseline;gap:6px;margin:18px 0 6px}
+.time,.tin{font-size:64px;font-weight:700;letter-spacing:-.03em;line-height:1}
+.tin{width:100%;max-width:220px;border:0;border-bottom:1px dashed var(--muted2);background:transparent;padding:0;border-radius:0}
+.tin::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer}
+.secs{font-size:22px;font-weight:700;color:var(--muted)}
+.clock.inv .secs{color:var(--inv-muted)}
+.sub{font-size:14px;color:var(--muted)}
+.din{border:0;background:transparent;font-size:14px;color:var(--muted);padding:0}
+.hint{font-size:13px;color:var(--muted);margin-top:10px;min-height:1.2em}
+.hint button{background:none;border:0;padding:0;text-decoration:underline;cursor:pointer;color:var(--ink);font-size:13px}
+.diff{margin:20px 0 0;font-size:18px;line-height:1.4}
+.diff b{font-weight:700}
+.book{display:flex;gap:10px;align-items:center;margin-top:28px;padding-top:24px;border-top:1px solid var(--line);flex-wrap:wrap}
+.book select{min-height:52px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+.cta{flex:1;display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 20px;border-radius:10px;background:var(--ink);color:var(--bg);font-weight:700;text-decoration:none;font-size:16px;white-space:nowrap}
+.cta:hover{opacity:.88}
+footer{margin-top:40px;font-family:"Courier New",Courier,monospace;font-size:12px;color:var(--muted2)}
+@media (max-width:600px){.clocks{grid-template-columns:1fr}.time,.tin{font-size:54px}h1{font-size:28px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Fusos horários</div>
+  <h1>Que horas são para o cliente?</h1>
+
+  <div class="pick">
+    <span class="eyebrow">Fuso do cliente</span>
+    <div class="seg" role="group" aria-label="Escolher por">
+      <button type="button" data-mode="city" aria-pressed="false">Por cidade</button>
+      <button type="button" data-mode="abbr" aria-pressed="true">Por sigla</button>
+    </div>
+  </div>
+  <select id="city" class="sel" aria-label="Cidade do cliente" hidden></select>
+  <select id="tz" class="sel" aria-label="Sigla do fuso do cliente"></select>
+  <div id="warn" class="warn" hidden></div>
+
+  <div class="clocks">
+    <section class="clock" aria-label="Horário do cliente">
+      <div class="head"><span class="eyebrow">Cliente</span><span class="zone" id="cz"></span></div>
+      <div class="big"><input type="time" id="ct" class="tin" aria-label="Horário do cliente"><span class="secs" id="cs"></span></div>
+      <input type="date" id="cd" class="din" aria-label="Data do cliente">
+      <div class="hint" id="hint"></div>
+    </section>
+    <section class="clock inv" aria-label="Horário em São Paulo">
+      <div class="head"><span class="eyebrow">São Paulo</span><span class="zone">BRT</span></div>
+      <div class="big"><span class="time" id="st"></span><span class="secs" id="ss"></span></div>
+      <div class="sub" id="sd"></div>
+    </section>
+  </div>
+
+  <p class="diff" id="diff" aria-live="polite"></p>
+
+  <div class="book">
+    <select id="dur" aria-label="Duração da reunião">
+      <option value="30">30 min</option><option value="45">45 min</option><option value="60" selected>1 hora</option><option value="90">1h30</option>
+    </select>
+    <a id="cta" class="cta" target="_blank" rel="noopener">Agendar no calendário da Adroq</a>
+  </div>
+
+  <footer>adroq.com · Confidential</footer>
+</div>
+
+<script>
+/* [sigla, descrição, IANA da região, offset nominal em minutos, tipo] tipo: std | dst | gen (muda com a estação) | fix */
+const G=[
+ ['Américas',[
+  ['EST','Leste dos EUA, inverno (Nova York)','America/New_York',-300,'std'],
+  ['EDT','Leste dos EUA, verão (Nova York)','America/New_York',-240,'dst'],
+  ['ET','Leste dos EUA, horário local (Nova York)','America/New_York',null,'gen'],
+  ['CST','Central dos EUA, inverno (Chicago)','America/Chicago',-360,'std'],
+  ['CDT','Central dos EUA, verão (Chicago)','America/Chicago',-300,'dst'],
+  ['CT','Central dos EUA, horário local (Chicago)','America/Chicago',null,'gen'],
+  ['MST','Montanhas dos EUA, inverno (Denver)','America/Denver',-420,'std'],
+  ['MDT','Montanhas dos EUA, verão (Denver)','America/Denver',-360,'dst'],
+  ['MT','Montanhas dos EUA, horário local (Denver)','America/Denver',null,'gen'],
+  ['PST','Pacífico dos EUA, inverno (Los Angeles)','America/Los_Angeles',-480,'std'],
+  ['PDT','Pacífico dos EUA, verão (Los Angeles)','America/Los_Angeles',-420,'dst'],
+  ['PT','Pacífico dos EUA, horário local (Los Angeles)','America/Los_Angeles',null,'gen'],
+  ['AKST','Alasca, inverno','America/Anchorage',-540,'std'],
+  ['AKDT','Alasca, verão','America/Anchorage',-480,'dst'],
+  ['HST','Havaí','Pacific/Honolulu',-600,'fix'],
+  ['AST','Atlântico, inverno (Canadá leste, Caribe)','America/Halifax',-240,'std'],
+  ['ADT','Atlântico, verão (Canadá leste)','America/Halifax',-180,'dst'],
+  ['NST','Terra Nova, inverno (Canadá)','America/St_Johns',-210,'std'],
+  ['NDT','Terra Nova, verão (Canadá)','America/St_Johns',-150,'dst'],
+  ['CST','México (Cidade do México)','America/Mexico_City',-360,'fix'],
+  ['BRT','Brasília','America/Sao_Paulo',-180,'fix'],
+  ['AMT','Amazonas (Manaus)','America/Manaus',-240,'fix'],
+  ['ACT','Acre (Rio Branco)','America/Rio_Branco',-300,'fix'],
+  ['FNT','Fernando de Noronha','America/Noronha',-120,'fix'],
+  ['ART','Argentina (Buenos Aires)','America/Argentina/Buenos_Aires',-180,'fix'],
+  ['UYT','Uruguai (Montevidéu)','America/Montevideo',-180,'fix'],
+  ['PYT','Paraguai (Assunção)','America/Asuncion',-180,'fix'],
+  ['CLT','Chile, inverno (Santiago)','America/Santiago',-240,'std'],
+  ['CLST','Chile, verão (Santiago)','America/Santiago',-180,'dst'],
+  ['BOT','Bolívia (La Paz)','America/La_Paz',-240,'fix'],
+  ['VET','Venezuela (Caracas)','America/Caracas',-240,'fix'],
+  ['PET','Peru (Lima)','America/Lima',-300,'fix'],
+  ['COT','Colômbia (Bogotá)','America/Bogota',-300,'fix'],
+  ['ECT','Equador (Guayaquil)','America/Guayaquil',-300,'fix'],
+ ]],
+ ['Europa e África',[
+  ['GMT','Greenwich, referência +0','UTC',0,'fix'],
+  ['UTC','Tempo universal, referência +0','UTC',0,'fix'],
+  ['BST','Reino Unido, verão (Londres)','Europe/London',60,'dst'],
+  ['UK','Reino Unido, horário local (Londres)','Europe/London',null,'gen'],
+  ['IST','Irlanda, verão (Dublin)','Europe/Dublin',60,'dst'],
+  ['WET','Portugal, inverno (Lisboa)','Europe/Lisbon',0,'std'],
+  ['WEST','Portugal, verão (Lisboa)','Europe/Lisbon',60,'dst'],
+  ['CET','Europa central, inverno (Paris, Berlim, Madri, Malta)','Europe/Paris',60,'std'],
+  ['CEST','Europa central, verão (Paris, Berlim, Madri, Malta)','Europe/Paris',120,'dst'],
+  ['EET','Europa oriental, inverno (Chipre, Grécia)','Asia/Nicosia',120,'std'],
+  ['EEST','Europa oriental, verão (Chipre, Grécia)','Asia/Nicosia',180,'dst'],
+  ['MSK','Moscou','Europe/Moscow',180,'fix'],
+  ['TRT','Turquia (Istambul)','Europe/Istanbul',180,'fix'],
+  ['WAT','África ocidental (Lagos)','Africa/Lagos',60,'fix'],
+  ['CAT','África central (Maputo)','Africa/Maputo',120,'fix'],
+  ['SAST','África do Sul (Joanesburgo)','Africa/Johannesburg',120,'fix'],
+  ['EAT','África oriental (Nairóbi)','Africa/Nairobi',180,'fix'],
+ ]],
+ ['Oriente Médio e Ásia',[
+  ['IST','Israel, inverno (Tel Aviv)','Asia/Jerusalem',120,'std'],
+  ['IDT','Israel, verão (Tel Aviv)','Asia/Jerusalem',180,'dst'],
+  ['AST','Arábia (Riad, Catar)','Asia/Riyadh',180,'fix'],
+  ['GST','Golfo (Dubai, Abu Dhabi)','Asia/Dubai',240,'fix'],
+  ['IRST','Irã (Teerã)','Asia/Tehran',210,'fix'],
+  ['AFT','Afeganistão (Cabul)','Asia/Kabul',270,'fix'],
+  ['PKT','Paquistão (Karachi)','Asia/Karachi',300,'fix'],
+  ['IST','Índia (Mumbai, Nova Délhi)','Asia/Kolkata',330,'fix'],
+  ['NPT','Nepal (Katmandu)','Asia/Kathmandu',345,'fix'],
+  ['BST','Bangladesh (Daca)','Asia/Dhaka',360,'fix'],
+  ['ICT','Indochina (Bangkok, Vietnã)','Asia/Bangkok',420,'fix'],
+  ['WIB','Indonésia ocidental (Jacarta)','Asia/Jakarta',420,'fix'],
+  ['MYT','Malásia (Kuala Lumpur)','Asia/Kuala_Lumpur',480,'fix'],
+  ['SGT','Singapura','Asia/Singapore',480,'fix'],
+  ['HKT','Hong Kong','Asia/Hong_Kong',480,'fix'],
+  ['CST','China (Xangai, Pequim)','Asia/Shanghai',480,'fix'],
+  ['PHT','Filipinas (Manila)','Asia/Manila',480,'fix'],
+  ['KST','Coreia do Sul (Seul)','Asia/Seoul',540,'fix'],
+  ['JST','Japão (Tóquio)','Asia/Tokyo',540,'fix'],
+ ]],
+ ['Oceania',[
+  ['AWST','Austrália ocidental (Perth)','Australia/Perth',480,'fix'],
+  ['ACST','Austrália central, padrão (Adelaide)','Australia/Adelaide',570,'std'],
+  ['ACDT','Austrália central, verão (Adelaide)','Australia/Adelaide',630,'dst'],
+  ['AEST','Austrália leste, padrão (Sydney)','Australia/Sydney',600,'std'],
+  ['AEDT','Austrália leste, verão (Sydney)','Australia/Sydney',660,'dst'],
+  ['NZST','Nova Zelândia, padrão (Auckland)','Pacific/Auckland',720,'std'],
+  ['NZDT','Nova Zelândia, verão (Auckland)','Pacific/Auckland',780,'dst'],
+ ]],
+];
+const offs=[];for(let o=-12;o<=14;o++)if(o)offs.push([`GMT${o>0?'+':'−'}${Math.abs(o)}`,'Deslocamento fixo',null,o*60,'fix']);
+G.push(['Deslocamento fixo (GMT±)',offs]);
+const Z=[];G.forEach(([,l])=>l.forEach(z=>Z.push(z)));
+
+/* [cidade, IANA, sigla padrão, sigla de verão] */
+const CG=[
+ ['Brasil e América Latina',[['São Paulo','America/Sao_Paulo','BRT'],['Buenos Aires','America/Argentina/Buenos_Aires','ART'],['Santiago','America/Santiago','CLT','CLST'],['Montevidéu','America/Montevideo','UYT'],['Bogotá','America/Bogota','COT'],['Lima','America/Lima','PET'],['Cidade do México','America/Mexico_City','CST'],['Caracas','America/Caracas','VET']]],
+ ['América do Norte',[['Nova York','America/New_York','EST','EDT'],['Miami','America/New_York','EST','EDT'],['Toronto','America/Toronto','EST','EDT'],['Chicago','America/Chicago','CST','CDT'],['Houston','America/Chicago','CST','CDT'],['Denver','America/Denver','MST','MDT'],['Phoenix','America/Phoenix','MST'],['Los Angeles','America/Los_Angeles','PST','PDT'],['São Francisco','America/Los_Angeles','PST','PDT'],['Vancouver','America/Vancouver','PST','PDT']]],
+ ['Europa',[['Londres','Europe/London','GMT','BST'],['Dublin','Europe/Dublin','GMT','IST'],['Lisboa','Europe/Lisbon','WET','WEST'],['Madri','Europe/Madrid','CET','CEST'],['Paris','Europe/Paris','CET','CEST'],['Berlim','Europe/Berlin','CET','CEST'],['Frankfurt','Europe/Berlin','CET','CEST'],['Amsterdã','Europe/Amsterdam','CET','CEST'],['Zurique','Europe/Zurich','CET','CEST'],['Milão','Europe/Rome','CET','CEST'],['Malta','Europe/Malta','CET','CEST'],['Varsóvia','Europe/Warsaw','CET','CEST'],['Estocolmo','Europe/Stockholm','CET','CEST'],['Atenas','Europe/Athens','EET','EEST'],['Limassol (Chipre)','Asia/Nicosia','EET','EEST'],['Istambul','Europe/Istanbul','TRT'],['Moscou','Europe/Moscow','MSK']]],
+ ['Oriente Médio e África',[['Tel Aviv','Asia/Jerusalem','IST','IDT'],['Dubai','Asia/Dubai','GST'],['Abu Dhabi','Asia/Dubai','GST'],['Riad','Asia/Riyadh','AST'],['Doha','Asia/Qatar','AST'],['Cairo','Africa/Cairo','EET','EEST'],['Joanesburgo','Africa/Johannesburg','SAST'],['Lagos','Africa/Lagos','WAT'],['Nairóbi','Africa/Nairobi','EAT']]],
+ ['Ásia e Oceania',[['Mumbai','Asia/Kolkata','IST'],['Bangkok','Asia/Bangkok','ICT'],['Kuala Lumpur','Asia/Kuala_Lumpur','MYT'],['Cingapura','Asia/Singapore','SGT'],['Hong Kong','Asia/Hong_Kong','HKT'],['Xangai','Asia/Shanghai','CST'],['Seul','Asia/Seoul','KST'],['Tóquio','Asia/Tokyo','JST'],['Sydney','Australia/Sydney','AEST','AEDT'],['Melbourne','Australia/Melbourne','AEST','AEDT'],['Auckland','Pacific/Auckland','NZST','NZDT']]],
+];
+const C=[];CG.forEach(([,l])=>l.forEach(c=>C.push(c)));
+const SP='America/Sao_Paulo';
+const $=s=>document.querySelector(s);
+const pad=n=>String(n).padStart(2,'0');
+const fc={};
+function parts(tz,t){const f=fc[tz]||(fc[tz]=new Intl.DateTimeFormat('en-US',{timeZone:tz,hourCycle:'h23',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'}));const o={};for(const p of f.formatToParts(new Date(t)))o[p.type]=p.value;return {y:+o.year,mo:+o.month,d:+o.day,h:(+o.hour)%24,mi:+o.minute,s:+o.second}}
+function offsetMin(tz,t){const p=parts(tz,t);return Math.round((Date.UTC(p.y,p.mo-1,p.d,p.h,p.mi,p.s)-Math.floor(t/1000)*1000)/60000)}
+function zoned(y,mo,d,h,mi,tz){const g=Date.UTC(y,mo-1,d,h,mi);const t1=g-offsetMin(tz,g)*60000;return g-offsetMin(tz,t1)*60000}
+function gmt(off){const a=Math.abs(off);return `GMT${off>=0?'+':'−'}${Math.floor(a/60)}${a%60?':'+pad(a%60):''}`}
+function dur(m){const a=Math.abs(m),h=Math.floor(a/60),mm=a%60;return h&&mm?`${h}h${pad(mm)}`:h?`${h}h`:`${mm} min`}
+function fmtDate(p){return new Intl.DateTimeFormat('pt-BR',{timeZone:'UTC',weekday:'long',day:'numeric',month:'long'}).format(Date.UTC(p.y,p.mo-1,p.d))}
+function isDst(tz,t){const y=parts(tz,t).y,a=offsetMin(tz,Date.UTC(y,0,15)),b=offsetMin(tz,Date.UTC(y,6,15));return a!==b&&offsetMin(tz,t)===Math.max(a,b)}
+
+/* select */
+$('#tz').innerHTML=G.map(([g,l])=>`<optgroup label="${g}">${l.map(z=>{const i=Z.indexOf(z);const o=z[4]==='gen'?'muda com a estação':gmt(z[3]);return `<option value="${i}">${z[0]} — ${z[1]} (${o})</option>`}).join('')}</optgroup>`).join('');
+let idx=0;try{const v=localStorage.getItem('fusos:tz');if(v!==null&&Z[+v])idx=+v}catch(e){}
+if(!Z[idx])idx=0;
+$('#tz').value=idx;
+$('#city').innerHTML=CG.map(([g,l])=>`<optgroup label="${g}">${l.map(c=>`<option value="${C.indexOf(c)}">${c[0]}</option>`).join('')}</optgroup>`).join('');
+let mode='abbr',cidx=C.findIndex(c=>c[0]==='Londres');
+try{const m=localStorage.getItem('fusos:mode');if(m==='city'||m==='abbr')mode=m;const c=localStorage.getItem('fusos:city');if(c!==null&&C[+c])cidx=+c}catch(e){}
+$('#city').value=cidx;
+function setMode(m){mode=m;try{localStorage.setItem('fusos:mode',m)}catch(_){}
+  document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));
+  $('#city').hidden=m!=='city';$('#tz').hidden=m!=='abbr';}
+setMode(mode);
+
+let live=true,inst=Date.now();
+const cur=()=>{
+  if(mode==='abbr')return Z[idx];
+  const c=C[cidx],ab=c[3]&&isDst(c[1],inst)?c[3]:c[2];
+  return [ab,c[0],c[1],null,'gen',c[0]];
+};
+const lbl=z=>z[5]||z[0];
+const offAt=t=>{const z=cur();return z[4]==='gen'?offsetMin(z[2],t):z[3]};
+function clientParts(t){const z=cur();if(z[4]==='gen')return parts(z[2],t);const x=new Date(t+z[3]*60000);return {y:x.getUTCFullYear(),mo:x.getUTCMonth()+1,d:x.getUTCDate(),h:x.getUTCHours(),mi:x.getUTCMinutes(),s:x.getUTCSeconds()}}
+
+function render(){
+  const z=cur(),t=inst;
+  if(live)inst=t;
+  const cp=clientParts(t),sp=parts(SP,t),co=offAt(t),so=offsetMin(SP,t);
+  $('#cz').textContent=z[5]?`${z[5]}, ${z[0]}`:z[4]==='gen'?`${z[0]} (${gmt(co)})`:z[0];
+  if(document.activeElement!==$('#ct'))$('#ct').value=`${pad(cp.h)}:${pad(cp.mi)}`;
+  if(document.activeElement!==$('#cd'))$('#cd').value=`${cp.y}-${pad(cp.mo)}-${pad(cp.d)}`;
+  $('#cs').textContent=live?pad(cp.s):'';
+  $('#st').textContent=`${pad(sp.h)}:${pad(sp.mi)}`;
+  $('#ss').textContent=live?pad(sp.s):'';
+  const sameDay=cp.y===sp.y&&cp.mo===sp.mo&&cp.d===sp.d;
+  const dayDiff=(Date.UTC(sp.y,sp.mo-1,sp.d)-Date.UTC(cp.y,cp.mo-1,cp.d))/864e5;
+  $('#sd').textContent=fmtDate(sp)+(sameDay?'':dayDiff>0?' (dia seguinte)':' (dia anterior)');
+  $('#hint').innerHTML=live?'Agora. Toque no horário para simular outro.':'Horário simulado. <button id="back">Voltar para agora</button>';
+  const d=so-co,ct=`${pad(cp.h)}:${pad(cp.mi)}`,st=`${pad(sp.h)}:${pad(sp.mi)}`;
+  $('#diff').innerHTML=d===0?`São Paulo e ${esc(lbl(z))} estão no <b>mesmo horário</b>.`:
+    `São Paulo está <b>${dur(d)} ${d>0?'à frente':'atrás'}</b>. Quando são ${ct} em ${esc(lbl(z))}, são <b>${st}</b> em São Paulo.`;
+  // out-of-season warning
+  const w=$('#warn');
+  if((z[4]==='std'||z[4]==='dst')&&offsetMin(z[2],t)!==z[3]){
+    const realOff=offsetMin(z[2],t),dst=isDst(z[2],t);
+    const alt=Z.findIndex(x=>x[2]===z[2]&&x[4]===(dst?'dst':'std'));
+    w.hidden=false;
+    w.innerHTML=`<span>Nessa data, essa região não usa ${esc(z[0])}: está em ${alt>=0?esc(Z[alt][0]):'outro horário'} (${gmt(realOff)}). Muita gente escreve ${esc(z[0])} o ano todo.</span>${alt>=0?`<button id="sw" data-i="${alt}">Usar ${esc(Z[alt][0])}</button>`:''}`;
+  }else w.hidden=true;
+  // CTA
+  const m=+$('#dur').value,iso=x=>new Date(x).toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
+  const start=Math.floor(t/60000)*60000,end=start+m*60000;
+  const ep=clientParts(end),es=parts(SP,end);
+  const details=`Cliente${z[5]?' ('+z[5]+')':''}: ${ct}–${pad(ep.h)}:${pad(ep.mi)} ${z[0]} (${gmt(co)})\nSão Paulo: ${st}–${pad(es.h)}:${pad(es.mi)} BRT (GMT−3)`;
+  $('#cta').href=`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Reunião Adroq')}&dates=${iso(start)}/${iso(end)}&details=${encodeURIComponent(details)}&ctz=${encodeURIComponent(SP)}`;
+}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function fromInputs(){
+  const tv=$('#ct').value,dv=$('#cd').value;if(!tv||!dv)return;
+  const [h,mi]=tv.split(':').map(Number),[y,mo,d]=dv.split('-').map(Number),z=cur();
+  inst=z[4]==='gen'?zoned(y,mo,d,h,mi,z[2]):Date.UTC(y,mo-1,d,h,mi)-z[3]*60000;
+  live=false;render();
+}
+$('#ct').addEventListener('change',fromInputs);$('#ct').addEventListener('input',fromInputs);
+$('#cd').addEventListener('change',fromInputs);
+$('#tz').addEventListener('change',e=>{idx=+e.target.value;try{localStorage.setItem('fusos:tz',idx)}catch(_){}render()});
+$('#dur').addEventListener('change',render);
+$('#city').addEventListener('change',e=>{cidx=+e.target.value;try{localStorage.setItem('fusos:city',cidx)}catch(_){}render()});
+document.addEventListener('click',e=>{
+  if(e.target.id==='back'){live=true;inst=Date.now();render()}
+  if(e.target.dataset&&e.target.dataset.mode){setMode(e.target.dataset.mode);render()}
+  if(e.target.id==='sw'){idx=+e.target.dataset.i;$('#tz').value=idx;try{localStorage.setItem('fusos:tz',idx)}catch(_){}render()}
+});
+setInterval(()=>{if(live){inst=Date.now();render()}},1000);
+render();
+</script>
+</body>
+</html>
