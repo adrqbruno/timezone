@@ -46,8 +46,13 @@ select,input,button{font:inherit;color:inherit}
 .zone{font-weight:700;font-size:15px}
 .big{display:flex;align-items:baseline;gap:6px;margin:18px 0 6px}
 .time,.tin{font-size:64px;font-weight:700;letter-spacing:-.03em;line-height:1}
-.tin{width:100%;max-width:220px;border:0;border-bottom:1px dashed var(--muted2);background:transparent;padding:0;border-radius:0}
-.tin::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer}
+.clock{min-width:0}
+.big{flex-wrap:nowrap;min-width:0}
+.tin{field-sizing:content;width:3.3em;min-width:0;max-width:100%;flex:0 1 auto;border:0;border-bottom:1px dashed var(--muted2);background:transparent;padding:0;border-radius:0}
+@supports (field-sizing:content){.tin{width:auto}}
+.tin::-webkit-datetime-edit{padding:0}
+.tin::-webkit-datetime-edit-fields-wrapper{padding:0}
+.tin::-webkit-calendar-picker-indicator{display:none}
 .secs{font-size:22px;font-weight:700;color:var(--muted)}
 .clock.inv .secs{color:var(--inv-muted)}
 .sub{font-size:14px;color:var(--muted)}
@@ -257,7 +262,7 @@ function render(){
   const sameDay=cp.y===sp.y&&cp.mo===sp.mo&&cp.d===sp.d;
   const dayDiff=(Date.UTC(sp.y,sp.mo-1,sp.d)-Date.UTC(cp.y,cp.mo-1,cp.d))/864e5;
   $('#sd').textContent=fmtDate(sp)+(sameDay?'':dayDiff>0?' (dia seguinte)':' (dia anterior)');
-  $('#hint').innerHTML=live?'Agora. Toque no horário para simular outro.':'Horário simulado. <button id="back">Voltar para agora</button>';
+  $('#hint').innerHTML=live?'Agora. Clique no horário para digitar outro.':'Horário simulado. <button id="back">Voltar para agora</button>';
   const d=so-co,ct=`${pad(cp.h)}:${pad(cp.mi)}`,st=`${pad(sp.h)}:${pad(sp.mi)}`;
   $('#diff').innerHTML=d===0?`São Paulo e ${esc(lbl(z))} estão no <b>mesmo horário</b>.`:
     `São Paulo está <b>${dur(d)} ${d>0?'à frente':'atrás'}</b>. Quando são ${ct} em ${esc(lbl(z))}, são <b>${st}</b> em São Paulo.`;
