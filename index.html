@@ -32,8 +32,18 @@ label.lbl{display:block;margin-bottom:8px}
 select,input,button{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .sel{width:100%;min-height:52px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);font-size:17px}
-.pick{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;padding:3px;background:var(--fill)}
+.pick{display:flex;align-items:stretch;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.search{position:relative;flex:1 1 260px;min-width:0}
+.q{width:100%;height:100%;min-height:46px;padding:10px 14px 10px 40px;border:1px solid var(--line);border-radius:10px;background:var(--card) no-repeat 14px 50%/16px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23767676' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E");font-size:15px}
+.q::placeholder{color:var(--muted)}
+#qres{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:20;list-style:none;margin:0;padding:6px;background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 14px 36px rgba(0,0,0,.14);max-height:340px;overflow:auto}
+#qres li{display:flex;align-items:baseline;justify-content:space-between;gap:14px;padding:10px 10px;border-radius:7px;cursor:pointer}
+#qres li[aria-selected="true"]{background:var(--fill)}
+#qres .l{font-weight:700;white-space:nowrap}
+#qres .k{color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;text-align:right}
+#qres .t{font-family:"Courier New",Courier,monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted2);margin-right:8px}
+#qres li.none{cursor:default;color:var(--muted);font-size:14px}
+.seg{flex:none;display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:10px;padding:3px;background:var(--fill)}
 .seg button{border:0;background:transparent;border-radius:7px;padding:7px 14px;cursor:pointer;font-size:14px;color:var(--muted);font-weight:700}
 .seg button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:0 0 0 1px var(--line)}
 .warn{background:var(--warn-bg);color:var(--warn-ink);border-radius:10px;padding:12px 14px;margin-top:12px;font-size:14px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
@@ -74,8 +84,12 @@ footer{margin-top:40px;font-family:"Courier New",Courier,monospace;font-size:12p
   <div class="eyebrow">Fusos horários</div>
   <h1>Que horas são para o cliente?</h1>
 
+  <div class="eyebrow" style="margin-bottom:10px">Fuso do cliente</div>
   <div class="pick">
-    <span class="eyebrow">Fuso do cliente</span>
+    <div class="search">
+      <input id="q" type="text" class="q" placeholder="Buscar cidade ou sigla, ex.: Dubai, CET, GMT+3" role="combobox" aria-expanded="false" aria-controls="qres" aria-autocomplete="list" aria-label="Buscar cidade ou sigla" autocomplete="off" spellcheck="false">
+      <ul id="qres" role="listbox" hidden></ul>
+    </div>
     <div class="seg" role="group" aria-label="Escolher por">
       <button type="button" data-mode="city" aria-pressed="false">Por cidade</button>
       <button type="button" data-mode="abbr" aria-pressed="true">Por sigla</button>
@@ -299,6 +313,43 @@ document.addEventListener('click',e=>{
   if(e.target.dataset&&e.target.dataset.mode){setMode(e.target.dataset.mode);render()}
   if(e.target.id==='sw'){idx=+e.target.dataset.i;$('#tz').value=idx;try{localStorage.setItem('fusos:tz',idx)}catch(_){}render()}
 });
+/* busca manual */
+const norm=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[−–]/g,'-').replace(/\s+/g,'').replace(/^utc(?=[+-])/,'gmt');
+let hits=[],act=-1;
+function search(q){
+  const n=norm(q);if(!n)return [];
+  const r=[],now=Date.now();
+  C.forEach((c,i)=>{const nm=norm(c[0]);
+    const sc=nm===n?100:nm.startsWith(n)?80:nm.includes(n)?50:0;
+    if(sc){const ab=c[3]&&isDst(c[1],now)?c[3]:c[2];r.push({sc,type:'city',i,l:c[0],k:`${ab} (${gmt(offsetMin(c[1],now))})`})}});
+  Z.forEach((z,i)=>{const a=norm(z[0]),d=norm(z[1]);
+    const sc=a===n?90:(/^[+-]?\d/.test(n)&&a==='gmt'+(/^[+-]/.test(n)?n:'+'+n))?90:a.startsWith(n)?60:(n.length>2&&d.includes(n))?30:0;
+    if(sc)r.push({sc,type:'abbr',i,l:z[0],k:`${z[1]}${z[4]==='gen'?'':' ('+gmt(z[3])+')'}`})});
+  return r.sort((a,b)=>b.sc-a.sc).slice(0,8);
+}
+function drawHits(){
+  const ul=$('#qres'),q=$('#q');
+  if(!q.value.trim()){ul.hidden=true;q.setAttribute('aria-expanded','false');return}
+  ul.hidden=false;q.setAttribute('aria-expanded','true');
+  ul.innerHTML=hits.length?hits.map((h,j)=>`<li role="option" id="qo${j}" data-j="${j}" aria-selected="${j===act}"><span class="l"><span class="t">${h.type==='city'?'Cidade':'Sigla'}</span>${esc(h.l)}</span><span class="k">${esc(h.k)}</span></li>`).join(''):'<li class="none">Nada encontrado. Tente o nome da cidade ou uma sigla como CET.</li>';
+  if(act>=0){q.setAttribute('aria-activedescendant','qo'+act);const el=$('#qo'+act);el&&el.scrollIntoView&&el.scrollIntoView({block:'nearest'})}else q.removeAttribute('aria-activedescendant');
+}
+function pick(h){
+  if(h.type==='city'){cidx=h.i;$('#city').value=cidx;try{localStorage.setItem('fusos:city',cidx)}catch(_){}setMode('city')}
+  else{idx=h.i;$('#tz').value=idx;try{localStorage.setItem('fusos:tz',idx)}catch(_){}setMode('abbr')}
+  $('#q').value='';hits=[];act=-1;drawHits();render();
+}
+$('#q').addEventListener('input',e=>{hits=search(e.target.value);act=hits.length?0:-1;drawHits()});
+$('#q').addEventListener('keydown',e=>{
+  if(e.key==='ArrowDown'&&hits.length){act=(act+1)%hits.length;drawHits();e.preventDefault()}
+  else if(e.key==='ArrowUp'&&hits.length){act=(act-1+hits.length)%hits.length;drawHits();e.preventDefault()}
+  else if(e.key==='Enter'){if(hits[act<0?0:act])pick(hits[act<0?0:act]);e.preventDefault()}
+  else if(e.key==='Escape'){e.target.value='';hits=[];drawHits()}
+});
+$('#q').addEventListener('blur',()=>setTimeout(()=>{$('#qres').hidden=true;$('#q').setAttribute('aria-expanded','false')},120));
+$('#q').addEventListener('focus',()=>{if($('#q').value.trim()){hits=search($('#q').value);drawHits()}});
+$('#qres').addEventListener('mousedown',e=>{const li=e.target.closest('li[data-j]');if(!li)return;e.preventDefault();pick(hits[+li.dataset.j])});
+
 setInterval(()=>{if(live){inst=Date.now();render()}},1000);
 render();
 </script>
